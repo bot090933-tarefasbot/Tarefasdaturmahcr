@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Agenda Escolar - Calendário</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial;
+    background: #f2f2f2;
+    padding: 20px;
+  }
+
+  h1 { text-align: center; }
+
+  #calendario {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  #topoCal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  select {
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  #dias {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+  }
+
+  .dia {
+    padding: 15px;
+    background: #e5e5e5;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .dia:hover {
+    background: #d1d1d1;
+    transform: scale(1.05);
+  }
+
+  .comTarefa {
+    background: #6aff6a !important;
+    font-weight: bold;
+  }
+
+  #agenda {
+    max-width: 400px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    display: none;
+  }
+
+  .tarefa {
+    background: #e4e4e4;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+  }
+
+  #inputBox {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #aaa;
+  }
+
+  button {
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: dodgerblue;
+    color: white;
+    cursor: pointer;
+  }
+
+  #adminBox {
+    max-width: 300px;
+    margin: 10px auto 25px auto;
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+
+<h1>📅 Agenda Escolar</h1>
+
+<!-- LOGIN DO ADM -->
+<div id="adminBox">
+  <h3>Login de Administrador</h3>
+  <input id="senhaAdm" type="password" placeholder="Digite a senha...">
+  <button onclick="loginAdm()">Entrar</button>
+  <p id="msgAdm" style="color:red;"></p>
+</div>
+
+<div id="calendario">
+  <div id="topoCal">
+    <select id="mesSelect"></select>
+    <select id="anoSelect"></select>
+  </div>
+
+  <div id="dias"></div>
+</div>
+
+<div id="agenda">
+  <h2 id="tituloDia"></h2>
+
+  <div id="inputBox" style="display:none;">
+    <input id="novaTarefa" type="text" placeholder="Adicionar tarefa...">
+    <button onclick="addTarefa()">+</button>
+  </div>
+
+  <div id="tarefas"></div>
+</div>
+
+<script>
+  // 🔐 Senha do administrador
+  const SENHA_ADM = "1234"; // <-- TROQUE AQUI E USE SUA SENHA
+
+  let admin = false;
+
+  function loginAdm() {
+    const senha = document.getElementById("senhaAdm").value;
+    if (senha === SENHA_ADM) {
+      admin = true;
+      document.getElementById("adminBox").style.display = "none";
+      document.getElementById("msgAdm").textContent = "";
+      gerarCalendario();
+    } else {
+      document.getElementById("msgAdm").textContent = "Senha incorreta!";
+    }
+  }
+
+
+  const meses = [
+    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  ];
+
+  const mesSelect = document.getElementById("mesSelect");
+  const anoSelect = document.getElementById("anoSelect");
+  const diasDiv = document.getElementById("dias");
+  const tituloDia = document.getElementById("tituloDia");
+  const tarefasEl = document.getElementById("tarefas");
+
+  let diaAtualSelecionado = null;
+
+  function carregarSeletores() {
+    meses.forEach((m, i) => {
+      let opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = m;
+      mesSelect.appendChild(opt);
+    });
+
+    const anoAtual = new Date().getFullYear();
+    for (let a = anoAtual - 5; a <= anoAtual + 5; a++) {
+      let opt = document.createElement("option");
+      opt.value = a;
+      opt.textContent = a;
+      anoSelect.appendChild(opt);
+    }
+
+    mesSelect.value = new Date().getMonth();
+    anoSelect.value = anoAtual;
+
+    gerarCalendario();
+  }
+
+  function gerarCalendario() {
+    diasDiv.innerHTML = "";
+    const mes = parseInt(mesSelect.value);
+    const ano = parseInt(anoSelect.value);
+
+    const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+
+    for (let d = 1; d <= ultimoDia; d++) {
+      const chave = "tarefas_" + `${d}/${mes + 1}/${ano}`;
+      const salvo = JSON.parse(localStorage.getItem(chave)) || [];
+
+      const div = document.createElement("div");
+      div.className = "dia";
+      div.textContent = d;
+
+      if (salvo.length > 0) {
+        div.classList.add("comTarefa");
+      }
+
+      div.onclick = () => abrirAgenda(d, mes, ano);
+      diasDiv.appendChild(div);
+    }
+  }
+
+  function abrirAgenda(dia, mes, ano) {
+    diaAtualSelecionado = `${dia}/${mes + 1}/${ano}`;
+    tituloDia.textContent = `📘 Tarefas de ${dia}/${mes + 1}/${ano}`;
+    document.getElementById("agenda").style.display = "block";
+
+    // só ADM vê a caixa de adicionar tarefas
+    document.getElementById("inputBox").style.display = admin ? "flex" : "none";
+
+    carregarTarefas();
+  }
+
+  function carregarTarefas() {
+    const chave = "tarefas_" + diaAtualSelecionado;
+    const salvo = JSON.parse(localStorage.getItem(chave)) || [];
+    tarefasEl.innerHTML = "";
+
+    salvo.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "tarefa";
+      div.textContent = t;
+      tarefasEl.appendChild(div);
+    });
+  }
+
+  function addTarefa() {
+    if (!admin) return;
+
+    const texto = document.getElementById("novaTarefa").value;
+    if (texto.trim() === "") return;
+
+    const chave = "tarefas_" + diaAtualSelecionado;
+    const salvo = JSON.parse(localStorage.getItem(chave)) || [];
+
+    salvo.push(texto);
+    localStorage.setItem(chave, JSON.stringify(salvo));
+
+    document.getElementById("novaTarefa").value = "";
+    carregarTarefas();
+    gerarCalendario();
+  }
+
+  mesSelect.onchange = gerarCalendario;
+  anoSelect.onchange = gerarCalendario;
+
+  carregarSeletores();
+</script>
+
+</body>
+</html>
