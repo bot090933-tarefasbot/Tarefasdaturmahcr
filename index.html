@@ -20,6 +20,7 @@
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
   }
 
   #topoCal {
@@ -46,12 +47,19 @@
     text-align: center;
     border-radius: 8px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: 0.3s;
   }
 
   .dia:hover {
     background: #d1d1d1;
-    transform: scale(1.05);
+    transform: scale(1.1);
+    animation: pulse 0.5s;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
   }
 
   .comTarefa {
@@ -67,6 +75,15 @@
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
     display: none;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.4s ease;
+  }
+
+  #agenda.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .tarefa {
@@ -77,6 +94,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.4s ease;
+  }
+
+  .tarefa.show {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   #inputBox {
@@ -99,6 +124,11 @@
     background: dodgerblue;
     color: white;
     cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: deepskyblue;
   }
 
   button.removeBtn {
@@ -123,7 +153,6 @@
 </head>
 <body>
 
-<!-- 🔥 ADICIONADO: título pequeno no cantinho -->
 <div style="
   position: fixed;
   top: 5px;
@@ -150,7 +179,6 @@
 
 <h1>📅 Agenda Escolar</h1>
 
-<!-- LOGIN DO ADM -->
 <div id="adminBox">
   <h3>Login de Administrador</h3>
   <input id="senhaAdm" type="password" placeholder="Digite a senha...">
@@ -169,156 +197,149 @@
 <div id="agenda">
   <h2 id="tituloDia"></h2>
   <h3 id="nomeDiaSemana"></h3>
-
   <div id="inputBox" style="display:none;">
     <input id="novaTarefa" type="text" placeholder="Adicionar tarefa...">
     <button onclick="addTarefa()">+</button>
   </div>
-
   <div id="tarefas"></div>
 </div>
 
 <script>
-  const SENHA_ADM = "admins26";
-  const dbURL = "https://tarefashcr-default-rtdb.firebaseio.com/tarefas";
-  let admin = false;
+const SENHA_ADM = "admins26";
+const dbURL = "https://tarefashcr-default-rtdb.firebaseio.com/tarefas";
+let admin = false;
 
-  function loginAdm() {
-    const senha = document.getElementById("senhaAdm").value;
-    if (senha === SENHA_ADM) {
-      admin = true;
-      document.getElementById("adminBox").style.display = "none";
-      document.getElementById("msgAdm").textContent = "";
-      gerarCalendario();
-    } else {
-      document.getElementById("msgAdm").textContent = "Senha incorreta!";
-    }
-  }
-
-  const meses = [
-    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-  ];
-  const diasSemana = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
-
-  const mesSelect = document.getElementById("mesSelect");
-  const anoSelect = document.getElementById("anoSelect");
-  const diasDiv   = document.getElementById("dias");
-  const tituloDia = document.getElementById("tituloDia");
-  const nomeDiaSemanaEl = document.getElementById("nomeDiaSemana");
-  const tarefasEl = document.getElementById("tarefas");
-
-  let diaAtualSelecionado = null;
-
-  function carregarSeletores() {
-    meses.forEach((m, i) => {
-      let opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = m;
-      mesSelect.appendChild(opt);
-    });
-
-    const anoAtual = new Date().getFullYear();
-    for (let a = anoAtual - 5; a <= anoAtual + 5; a++) {
-      let opt = document.createElement("option");
-      opt.value = a;
-      opt.textContent = a;
-      anoSelect.appendChild(opt);
-    }
-
-    mesSelect.value = new Date().getMonth();
-    anoSelect.value = new Date().getFullYear();
-
+function loginAdm() {
+  const senha = document.getElementById("senhaAdm").value;
+  if (senha === SENHA_ADM) {
+    admin = true;
+    document.getElementById("adminBox").style.display = "none";
+    document.getElementById("msgAdm").textContent = "";
     gerarCalendario();
+  } else {
+    document.getElementById("msgAdm").textContent = "Senha incorreta!";
+  }
+}
+
+const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const diasSemana = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+
+const mesSelect = document.getElementById("mesSelect");
+const anoSelect = document.getElementById("anoSelect");
+const diasDiv   = document.getElementById("dias");
+const tituloDia = document.getElementById("tituloDia");
+const nomeDiaSemanaEl = document.getElementById("nomeDiaSemana");
+const tarefasEl = document.getElementById("tarefas");
+
+let diaAtualSelecionado = null;
+
+function carregarSeletores() {
+  meses.forEach((m, i) => {
+    let opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = m;
+    mesSelect.appendChild(opt);
+  });
+  const anoAtual = new Date().getFullYear();
+  for (let a = anoAtual - 5; a <= anoAtual + 5; a++) {
+    let opt = document.createElement("option");
+    opt.value = a;
+    opt.textContent = a;
+    anoSelect.appendChild(opt);
+  }
+  mesSelect.value = new Date().getMonth();
+  anoSelect.value = new Date().getFullYear();
+  gerarCalendario();
+}
+
+async function gerarCalendario() {
+  diasDiv.innerHTML = "";
+  const mes = parseInt(mesSelect.value);
+  const ano = parseInt(anoSelect.value);
+  const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+
+  for (let d = 1; d <= ultimoDia; d++) {
+    const div = document.createElement("div");
+    div.className = "dia";
+    div.textContent = d;
+    div.onclick = () => abrirAgenda(d, mes, ano);
+    diasDiv.appendChild(div);
   }
 
-  async function gerarCalendario() {
-    diasDiv.innerHTML = "";
-    const mes = parseInt(mesSelect.value);
-    const ano = parseInt(anoSelect.value);
-    const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+  marcarDiasComTarefas(mes, ano);
+}
 
-    for (let d = 1; d <= ultimoDia; d++) {
-      const div = document.createElement("div");
-      div.className = "dia";
-      div.textContent = d;
-      div.onclick = () => abrirAgenda(d, mes, ano);
-      diasDiv.appendChild(div);
-    }
-
-    marcarDiasComTarefas(mes, ano);
-  }
-
-  async function marcarDiasComTarefas(mes, ano) {
-    const diasHTML = document.querySelectorAll(".dia");
-    for (let d = 1; d <= diasHTML.length; d++) {
-      const chave = `${d}-${mes+1}-${ano}`;
-      const r = await fetch(`${dbURL}/${chave}.json`);
-      const dados = await r.json();
-      if (dados) diasHTML[d-1].classList.add("comTarefa");
-    }
-  }
-
-  function abrirAgenda(dia, mes, ano) {
-    diaAtualSelecionado = `${dia}-${mes + 1}-${ano}`;
-    tituloDia.textContent = `📘 Tarefas de ${dia}/${mes + 1}/${ano}`;
-    nomeDiaSemanaEl.textContent = diasSemana[new Date(ano, mes, dia).getDay()];
-    document.getElementById("agenda").style.display = "block";
-    document.getElementById("inputBox").style.display = admin ? "flex" : "none";
-    carregarTarefas();
-  }
-
-  async function carregarTarefas() {
-    const chave = diaAtualSelecionado;
+async function marcarDiasComTarefas(mes, ano) {
+  const diasHTML = document.querySelectorAll(".dia");
+  for (let d = 1; d <= diasHTML.length; d++) {
+    const chave = `${d}-${mes+1}-${ano}`;
     const r = await fetch(`${dbURL}/${chave}.json`);
-    const dados = await r.json() || {};
+    const dados = await r.json();
+    if (dados) diasHTML[d-1].classList.add("comTarefa");
+  }
+}
 
-    tarefasEl.innerHTML = "";
+function abrirAgenda(dia, mes, ano) {
+  diaAtualSelecionado = `${dia}-${mes + 1}-${ano}`;
+  tituloDia.textContent = `📘 Tarefas de ${dia}/${mes + 1}/${ano}`;
+  nomeDiaSemanaEl.textContent = diasSemana[new Date(ano, mes, dia).getDay()];
+  const agendaEl = document.getElementById("agenda");
+  agendaEl.classList.add("show");
+  document.getElementById("inputBox").style.display = admin ? "flex" : "none";
+  carregarTarefas();
+}
 
-    Object.entries(dados).forEach(([id, t]) => {
-      const div = document.createElement("div");
-      div.className = "tarefa";
+async function carregarTarefas() {
+  const chave = diaAtualSelecionado;
+  const r = await fetch(`${dbURL}/${chave}.json`);
+  const dados = await r.json() || {};
 
-      const span = document.createElement("span");
-      span.textContent = t;
-      div.appendChild(span);
+  tarefasEl.innerHTML = "";
 
-      if(admin){
-        const btn = document.createElement("button");
-        btn.textContent = "❌";
-        btn.className = "removeBtn";
-        btn.onclick = async () => {
-          await fetch(`${dbURL}/${chave}/${id}.json`, { method: "DELETE" });
-          carregarTarefas();
-          gerarCalendario();
-        }
-        div.appendChild(btn);
+  Object.entries(dados).forEach(([id, t]) => {
+    const div = document.createElement("div");
+    div.className = "tarefa";
+    const span = document.createElement("span");
+    span.textContent = t;
+    div.appendChild(span);
+
+    if(admin){
+      const btn = document.createElement("button");
+      btn.textContent = "❌";
+      btn.className = "removeBtn";
+      btn.onclick = async () => {
+        await fetch(`${dbURL}/${chave}/${id}.json`, { method: "DELETE" });
+        carregarTarefas();
+        gerarCalendario();
       }
+      div.appendChild(btn);
+    }
 
-      tarefasEl.appendChild(div);
-    });
-  }
+    tarefasEl.appendChild(div);
+    setTimeout(()=>div.classList.add("show"),50); // animação
+  });
+}
 
-  async function addTarefa() {
-    if (!admin) return;
-    const texto = document.getElementById("novaTarefa").value.trim();
-    if (texto === "") return;
-    const chave = diaAtualSelecionado;
+async function addTarefa() {
+  if (!admin) return;
+  const texto = document.getElementById("novaTarefa").value.trim();
+  if (texto === "") return;
+  const chave = diaAtualSelecionado;
 
-    await fetch(`${dbURL}/${chave}.json`, {
-      method: "POST",
-      body: JSON.stringify(texto)
-    });
+  await fetch(`${dbURL}/${chave}.json`, {
+    method: "POST",
+    body: JSON.stringify(texto)
+  });
 
-    document.getElementById("novaTarefa").value = "";
-    carregarTarefas();
-    gerarCalendario();
-  }
+  document.getElementById("novaTarefa").value = "";
+  carregarTarefas();
+  gerarCalendario();
+}
 
-  mesSelect.onchange = gerarCalendario;
-  anoSelect.onchange = gerarCalendario;
+mesSelect.onchange = gerarCalendario;
+anoSelect.onchange = gerarCalendario;
 
-  carregarSeletores();
+carregarSeletores();
 </script>
 
 </body>
