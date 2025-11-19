@@ -123,6 +123,31 @@
 </head>
 <body>
 
+<!-- 🔥 ADICIONADO: título pequeno no cantinho -->
+<div style="
+  position: fixed;
+  top: 5px;
+  left: 10px;
+  font-size: 12px;
+  color: #555;
+  opacity: .8;
+  font-weight: 600;
+">
+  melhor turma 😝
+</div>
+
+<div style="
+  position: fixed;
+  top: 5px;
+  right: 10px;
+  font-size: 12px;
+  color: #555;
+  opacity: .8;
+  font-weight: 600;
+">
+  v2.0
+</div>
+
 <h1>📅 Agenda Escolar</h1>
 
 <!-- LOGIN DO ADM -->
@@ -143,7 +168,7 @@
 
 <div id="agenda">
   <h2 id="tituloDia"></h2>
-  <h3 id="nomeDiaSemana"></h3> <!-- NOVO: nome do dia -->
+  <h3 id="nomeDiaSemana"></h3>
 
   <div id="inputBox" style="display:none;">
     <input id="novaTarefa" type="text" placeholder="Adicionar tarefa...">
@@ -292,8 +317,9 @@
 
   mesSelect.onchange = gerarCalendario;
   anoSelect.onchange = gerarCalendario;
+
   carregarSeletores();
 </script>
 
 </body>
-    </html>
+  </html>
