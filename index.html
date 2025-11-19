@@ -74,6 +74,9 @@
     padding: 10px;
     margin: 8px 0;
     border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   #inputBox {
@@ -98,6 +101,10 @@
     cursor: pointer;
   }
 
+  button.removeBtn {
+    background: red;
+  }
+
   #adminBox {
     max-width: 300px;
     margin: 10px auto 25px auto;
@@ -105,6 +112,12 @@
     padding: 15px;
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  #nomeDiaSemana {
+    text-align: center;
+    color: gray;
+    margin-top: 5px;
   }
 </style>
 </head>
@@ -125,12 +138,12 @@
     <select id="mesSelect"></select>
     <select id="anoSelect"></select>
   </div>
-
   <div id="dias"></div>
 </div>
 
 <div id="agenda">
   <h2 id="tituloDia"></h2>
+  <h3 id="nomeDiaSemana"></h3> <!-- NOVO: nome do dia -->
 
   <div id="inputBox" style="display:none;">
     <input id="novaTarefa" type="text" placeholder="Adicionar tarefa...">
@@ -141,12 +154,8 @@
 </div>
 
 <script>
-  // 🔐 Senha do administrador
   const SENHA_ADM = "admins26";
-
-  // 🔗 URL do Firebase
   const dbURL = "https://tarefashcr-default-rtdb.firebaseio.com/tarefas";
-
   let admin = false;
 
   function loginAdm() {
@@ -165,11 +174,13 @@
     "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
     "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
   ];
+  const diasSemana = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
 
   const mesSelect = document.getElementById("mesSelect");
   const anoSelect = document.getElementById("anoSelect");
   const diasDiv   = document.getElementById("dias");
   const tituloDia = document.getElementById("tituloDia");
+  const nomeDiaSemanaEl = document.getElementById("nomeDiaSemana");
   const tarefasEl = document.getElementById("tarefas");
 
   let diaAtualSelecionado = null;
@@ -215,24 +226,20 @@
 
   async function marcarDiasComTarefas(mes, ano) {
     const diasHTML = document.querySelectorAll(".dia");
-
     for (let d = 1; d <= diasHTML.length; d++) {
       const chave = `${d}-${mes+1}-${ano}`;
       const r = await fetch(`${dbURL}/${chave}.json`);
       const dados = await r.json();
-      if (dados) {
-        diasHTML[d-1].classList.add("comTarefa");
-      }
+      if (dados) diasHTML[d-1].classList.add("comTarefa");
     }
   }
 
   function abrirAgenda(dia, mes, ano) {
     diaAtualSelecionado = `${dia}-${mes + 1}-${ano}`;
     tituloDia.textContent = `📘 Tarefas de ${dia}/${mes + 1}/${ano}`;
+    nomeDiaSemanaEl.textContent = diasSemana[new Date(ano, mes, dia).getDay()];
     document.getElementById("agenda").style.display = "block";
-
     document.getElementById("inputBox").style.display = admin ? "flex" : "none";
-
     carregarTarefas();
   }
 
@@ -243,20 +250,34 @@
 
     tarefasEl.innerHTML = "";
 
-    Object.values(dados).forEach(t => {
+    Object.entries(dados).forEach(([id, t]) => {
       const div = document.createElement("div");
       div.className = "tarefa";
-      div.textContent = t;
+
+      const span = document.createElement("span");
+      span.textContent = t;
+      div.appendChild(span);
+
+      if(admin){
+        const btn = document.createElement("button");
+        btn.textContent = "❌";
+        btn.className = "removeBtn";
+        btn.onclick = async () => {
+          await fetch(`${dbURL}/${chave}/${id}.json`, { method: "DELETE" });
+          carregarTarefas();
+          gerarCalendario();
+        }
+        div.appendChild(btn);
+      }
+
       tarefasEl.appendChild(div);
     });
   }
 
   async function addTarefa() {
     if (!admin) return;
-
     const texto = document.getElementById("novaTarefa").value.trim();
     if (texto === "") return;
-
     const chave = diaAtualSelecionado;
 
     await fetch(`${dbURL}/${chave}.json`, {
@@ -271,9 +292,8 @@
 
   mesSelect.onchange = gerarCalendario;
   anoSelect.onchange = gerarCalendario;
-
   carregarSeletores();
 </script>
 
 </body>
-  </html>
+    </html>
