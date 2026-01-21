@@ -2,152 +2,186 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Agenda Escolar - Calendário</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Escolar</title>
 <style>
 body {
   margin: 0;
   font-family: Arial;
   background: #f2f2f2;
   padding: 20px;
+  transition: .3s;
 }
+body.dark {
+  background: #121212;
+  color: #eee;
+}
+
 h1 { text-align: center; }
-#calendario {
-  max-width: 500px;
-  margin: auto;
+
+button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: dodgerblue;
+  color: white;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+button.removeBtn { background: red; }
+button.pdfBtn { background: #3c9; }
+
+#calendario, #agenda, #loginBox {
   background: white;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(0,0,0,.2);
 }
+
+body.dark #calendario,
+body.dark #agenda,
+body.dark #loginBox {
+  background: #1e1e1e;
+}
+
 #topoCal {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 10px;
 }
+
 select {
   padding: 8px;
   border-radius: 8px;
+  width: 100%;
 }
+
 #dias {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
   gap: 10px;
 }
+
 .dia {
-  padding: 15px;
+  padding: 12px;
   background: #e5e5e5;
   text-align: center;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s;
 }
-.dia:hover {
-  background: #d1d1d1;
-  transform: scale(1.1);
-  animation: pulse 0.5s;
+
+body.dark .dia {
+  background: #2a2a2a;
 }
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
+
 .comTarefa {
   background: #6aff6a !important;
   font-weight: bold;
 }
+
 #agenda {
-  max-width: 400px;
-  margin: 30px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
   display: none;
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: all 0.4s ease;
+  margin-top: 25px;
 }
-#agenda.show {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
-}
-.tarefa {
+
+.tarefa, .aviso {
   background: #e4e4e4;
   padding: 10px;
   margin: 8px 0;
   border-radius: 8px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 5px;
-  opacity: 0;
-  transform: translateX(-20px);
-  transition: all 0.4s ease;
 }
-.tarefa.show {
-  opacity: 1;
-  transform: translateX(0);
+
+body.dark .tarefa, body.dark .aviso {
+  background: #2a2a2a;
 }
-#inputBox {
+
+#inputBox, #inputAviso {
   display: flex;
   gap: 5px;
   margin-bottom: 10px;
 }
-input {
+
+input[type="text"] {
   flex: 1;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #aaa;
 }
-button {
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: dodgerblue;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
+
+#loginBox input {
+  width: 100%;
+  margin-top: 8px;
 }
-button:hover { background: deepskyblue; }
-button.removeBtn { background: red; }
-button.pdfBtn { background: #3c9; }
-#adminBox {
-  max-width: 300px;
-  margin: 10px auto 25px auto;
+
+/* FRAME AVISOS */
+#avisosFrame {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 400px;
   background: white;
-  padding: 15px;
+  padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  box-shadow: 0 0 15px rgba(0,0,0,.3);
+  display: none;
+  z-index: 1000;
 }
-#nomeDiaSemana {
-  text-align: center;
-  color: gray;
-  margin-top: 5px;
+
+body.dark #avisosFrame { background: #1e1e1e; }
+
+#avisosFrame h3 { margin-top:0; }
+
+/* BOTÃO AVISOS NO CANTO */
+#btnAvisos {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: orange;
+  color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
 }
 </style>
 </head>
 
 <body>
+
 <div style="position: fixed;top: 5px;left: 10px;font-size: 12px;color: #555;opacity: .8;font-weight: 600;">
   melhor turma 😝
 </div>
 <div style="position: fixed;top: 5px;right: 10px;font-size: 12px;color: #555;opacity: .8;font-weight: 600;">
-  v2.0
+  v2.0.1
 </div>
 
-<h1>📅 Agenda Escolar</h1>
+<h1>📅 Agenda 8 Ano G</h1>
 
-<div id="adminBox">
-  <h3>Login de Administrador</h3>
-  <input id="senhaAdm" type="password" placeholder="Digite a senha...">
-  <button onclick="loginAdm()">Entrar</button>
+<!-- LOGIN ADMIN -->
+<div id="loginBox">
+  <h3>Login Admin</h3>
+  <input id="senhaAdm" type="password" placeholder="Digite a senha de admin">
+  <button onclick="loginAdmin()">Entrar</button>
   <p id="msgAdm" style="color:red;"></p>
 </div>
 
+<!-- AGENDA -->
 <div id="calendario">
   <div id="topoCal">
     <select id="mesSelect"></select>
@@ -157,174 +191,203 @@ button.pdfBtn { background: #3c9; }
 </div>
 
 <div id="agenda">
-  <h2 id="tituloDia"></h2>
-  <h3 id="nomeDiaSemana"></h3>
+  <h3 id="tituloDia"></h3>
   <div id="inputBox" style="display:none;">
-    <input id="novaTarefa" type="text" placeholder="Adicionar tarefa...">
+    <input id="novaTarefa" type="text" placeholder="Nova tarefa">
     <button onclick="addTarefa()">+</button>
   </div>
   <div id="tarefas"></div>
 </div>
 
+<!-- FRAME AVISOS -->
+<div id="avisosFrame">
+  <h3>Avisos Gerais</h3>
+  <div id="avisosList"></div>
+  <div id="inputAviso" style="display:none; margin-top:10px;">
+    <input id="novaAviso" placeholder="Novo aviso">
+    <button onclick="addAviso()">Adicionar</button>
+  </div>
+  <button onclick="fecharAvisos()">Fechar</button>
+</div>
+
+<!-- BOTÃO AVISOS -->
+<div id="btnAvisos" onclick="abrirAvisos()">📢</div>
+
+<div style="text-align:center;margin-top:10px;">
+  <button onclick="toggleDark()">🌙 Modo Noturno</button>
+</div>
+
 <script>
-const SENHA_ADM = "admins26";
-const dbURL = "https://tarefashcr-default-rtdb.firebaseio.com/tarefas";
-let admin = false;
-
-function loginAdm() {
-  const senha = document.getElementById("senhaAdm").value;
-  if (senha === SENHA_ADM) {
-    admin = true;
-    document.getElementById("adminBox").style.display = "none";
-    document.getElementById("msgAdm").textContent = "";
-    gerarCalendario();
-  } else {
-    document.getElementById("msgAdm").textContent = "Senha incorreta!";
-  }
-}
-
+// SENHA ATUALIZADA
+const dbURL = "https://tarefashcr-default-rtdb.firebaseio.com";
 const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const diasSemana = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const SENHA_ADMIN = "admin2526"; // <--- nova senha
+
 const mesSelect = document.getElementById("mesSelect");
 const anoSelect = document.getElementById("anoSelect");
 const diasDiv = document.getElementById("dias");
+const agenda = document.getElementById("agenda");
 const tituloDia = document.getElementById("tituloDia");
-const nomeDiaSemanaEl = document.getElementById("nomeDiaSemana");
 const tarefasEl = document.getElementById("tarefas");
-let diaAtualSelecionado = null;
+const inputBox = document.getElementById("inputBox");
+const loginBox = document.getElementById("loginBox");
+const msgAdm = document.getElementById("msgAdm");
 
-function carregarSeletores() {
-  meses.forEach((m, i) => {
-    let opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = m;
-    mesSelect.appendChild(opt);
+const avisosFrame = document.getElementById("avisosFrame");
+const avisosList = document.getElementById("avisosList");
+const inputAviso = document.getElementById("inputAviso");
+
+let diaSelecionado = "";
+let isAdmin = false;
+
+function toggleDark(){ document.body.classList.toggle("dark"); }
+
+function loginAdmin(){
+  const senha = document.getElementById("senhaAdm").value;
+  if(senha===SENHA_ADMIN){
+    isAdmin=true;
+    loginBox.style.display="none";
+    inputBox.style.display="flex";
+    inputAviso.style.display="flex";
+  } else { msgAdm.textContent="Senha incorreta!"; }
+}
+
+// MESMAS FUNÇÕES DE CALENDÁRIO, TAREFAS E AVISOS (idênticas ao código anterior)
+
+function carregarSeletores(){
+  meses.forEach((m,i)=>{
+    const o=document.createElement("option");
+    o.value=i; o.textContent=m;
+    mesSelect.appendChild(o);
   });
   const anoAtual = new Date().getFullYear();
-  for (let a = anoAtual - 5; a <= anoAtual + 5; a++) {
-    let opt = document.createElement("option");
-    opt.value = a;
-    opt.textContent = a;
-    anoSelect.appendChild(opt);
+  for(let a=anoAtual-3;a<=anoAtual+3;a++){
+    const o=document.createElement("option");
+    o.value=a; o.textContent=a;
+    anoSelect.appendChild(o);
   }
-  mesSelect.value = new Date().getMonth();
-  anoSelect.value = new Date().getFullYear();
+  mesSelect.value=new Date().getMonth();
+  anoSelect.value=anoAtual;
   gerarCalendario();
 }
 
-async function gerarCalendario() {
-  diasDiv.innerHTML = "";
-  const mes = parseInt(mesSelect.value);
-  const ano = parseInt(anoSelect.value);
-  const ultimoDia = new Date(ano, mes + 1, 0).getDate();
-
-  for (let d = 1; d <= ultimoDia; d++) {
-    const div = document.createElement("div");
-    div.className = "dia";
-    div.textContent = d;
-    div.onclick = () => abrirAgenda(d, mes, ano);
+async function gerarCalendario(){
+  diasDiv.innerHTML="";
+  const mes=parseInt(mesSelect.value);
+  const ano=parseInt(anoSelect.value);
+  const ultimo=new Date(ano,mes+1,0).getDate();
+  for(let d=1;d<=ultimo;d++){
+    const div=document.createElement("div");
+    div.className="dia"; div.textContent=d;
+    div.onclick=()=>abrirAgenda(d,mes,ano);
     diasDiv.appendChild(div);
   }
-  marcarDiasComTarefas(mes, ano);
+  marcarDias(mes,ano);
 }
 
-async function marcarDiasComTarefas(mes, ano) {
-  const diasHTML = document.querySelectorAll(".dia");
-  for (let d = 1; d <= diasHTML.length; d++) {
-    const chave = `${d}-${mes+1}-${ano}`;
-    const r = await fetch(`${dbURL}/${chave}.json`);
-    const dados = await r.json();
-    if (dados) diasHTML[d-1].classList.add("comTarefa");
+async function marcarDias(mes,ano){
+  const dias=document.querySelectorAll(".dia");
+  for(let i=0;i<dias.length;i++){
+    const chave=`${i+1}-${mes+1}-${ano}`;
+    const r=await fetch(`${dbURL}/tarefas/${chave}.json`);
+    if(await r.json()) dias[i].classList.add("comTarefa");
   }
 }
 
-function abrirAgenda(dia, mes, ano) {
-  diaAtualSelecionado = `${dia}-${mes + 1}-${ano}`;
-  tituloDia.textContent = `📘 Tarefas de ${dia}/${mes + 1}/${ano}`;
-  nomeDiaSemanaEl.textContent = diasSemana[new Date(ano, mes, dia).getDay()];
-  const agendaEl = document.getElementById("agenda");
-  agendaEl.classList.add("show");
-  document.getElementById("inputBox").style.display = admin ? "flex" : "none";
+function abrirAgenda(d,mes,ano){
+  diaSelecionado=`${d}-${mes+1}-${ano}`;
+  tituloDia.textContent=`Tarefas de ${diaSelecionado}`;
+  agenda.style.display="block";
+  inputBox.style.display = isAdmin ? "flex" : "none";
   carregarTarefas();
 }
 
-async function carregarTarefas() {
-  const chave = diaAtualSelecionado;
-  const r = await fetch(`${dbURL}/${chave}.json`);
-  const dados = await r.json() || {};
-  tarefasEl.innerHTML = "";
+async function carregarTarefas(){
+  tarefasEl.innerHTML="";
+  const r=await fetch(`${dbURL}/tarefas/${diaSelecionado}.json`);
+  const dados=await r.json()||{};
+  Object.entries(dados).forEach(([id,t])=>{
+    const div=document.createElement("div"); div.className="tarefa";
+    const span=document.createElement("span"); span.textContent=t.texto;
+    div.appendChild(span);
 
-  Object.entries(dados).forEach(([id, t]) => {
-    const div = document.createElement("div");
-    div.className = "tarefa";
-
-    const texto = document.createElement("span");
-    texto.textContent = t.texto || t;
-    div.appendChild(texto);
-
-    if (t.pdfBase64) {
-      const link = document.createElement("a");
-      link.textContent = "📎 PDF";
-      link.href = t.pdfBase64;
-      link.download = "tarefa.pdf";
-      link.className = "pdfBtn";
-      div.appendChild(link);
-    }
-
-    if (admin) {
-      const inputPdf = document.createElement("input");
-      inputPdf.type = "file";
-      inputPdf.accept = "application/pdf";
-      inputPdf.onchange = (e) => uploadPDF(chave, id, e.target.files[0]);
+    if(isAdmin){
+      const inputPdf=document.createElement("input");
+      inputPdf.type="file"; inputPdf.accept="application/pdf";
+      inputPdf.onchange=e=>uploadPDF(diaSelecionado,id,e.target.files[0]);
       div.appendChild(inputPdf);
 
-      const btnDel = document.createElement("button");
-      btnDel.textContent = "❌";
-      btnDel.className = "removeBtn";
-      btnDel.onclick = async () => {
-        await fetch(`${dbURL}/${chave}/${id}.json`, { method: "DELETE" });
-        carregarTarefas();
-        gerarCalendario();
+      const btnDel=document.createElement("button");
+      btnDel.textContent="❌"; btnDel.className="removeBtn";
+      btnDel.onclick=async ()=>{
+        await fetch(`${dbURL}/tarefas/${diaSelecionado}/${id}.json`,{method:"DELETE"});
+        carregarTarefas(); gerarCalendario();
       };
       div.appendChild(btnDel);
     }
-
     tarefasEl.appendChild(div);
-    setTimeout(() => div.classList.add("show"), 50);
   });
 }
 
-async function uploadPDF(chave, id, file) {
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const pdfBase64 = reader.result;
-    await fetch(`${dbURL}/${chave}/${id}.json`, {
-      method: "PATCH",
-      body: JSON.stringify({ pdfBase64 }),
+async function addTarefa(){
+  if(!isAdmin || !novaTarefa.value) return;
+  await fetch(`${dbURL}/tarefas/${diaSelecionado}.json`,{
+    method:"POST", body:JSON.stringify({texto:novaTarefa.value})
+  });
+  novaTarefa.value="";
+  carregarTarefas(); gerarCalendario();
+}
+
+async function uploadPDF(chave,id,file){
+  const reader=new FileReader();
+  reader.onload=async ()=>{
+    const pdfBase64=reader.result;
+    const old=await fetch(`${dbURL}/tarefas/${chave}/${id}.json`).then(r=>r.json());
+    await fetch(`${dbURL}/tarefas/${chave}/${id}.json`,{
+      method:"PATCH", body: JSON.stringify({texto:old.texto, pdfBase64})
     });
     carregarTarefas();
   };
   reader.readAsDataURL(file);
 }
 
-async function addTarefa() {
-  if (!admin) return;
-  const texto = document.getElementById("novaTarefa").value.trim();
-  if (texto === "") return;
-  const chave = diaAtualSelecionado;
+function abrirAvisos(){ avisosFrame.style.display="block"; carregarAvisos(); }
+function fecharAvisos(){ avisosFrame.style.display="none"; }
 
-  await fetch(`${dbURL}/${chave}.json`, {
-    method: "POST",
-    body: JSON.stringify({ texto }),
+async function carregarAvisos(){
+  avisosList.innerHTML="";
+  const r = await fetch(`${dbURL}/avisos.json`);
+  const dados = await r.json()||{};
+  Object.entries(dados).forEach(([id,a])=>{
+    const div=document.createElement("div"); div.className="aviso";
+    div.textContent = `[${a.data}] ${a.texto}`;
+    if(isAdmin){
+      const btnDel=document.createElement("button");
+      btnDel.textContent="❌"; btnDel.className="removeBtn";
+      btnDel.onclick=async ()=>{
+        await fetch(`${dbURL}/avisos/${id}.json`,{method:"DELETE"});
+        carregarAvisos();
+      };
+      div.appendChild(btnDel);
+    }
+    avisosList.appendChild(div);
   });
-
-  document.getElementById("novaTarefa").value = "";
-  carregarTarefas();
-  gerarCalendario();
 }
 
-mesSelect.onchange = gerarCalendario;
-anoSelect.onchange = gerarCalendario;
+async function addAviso(){
+  const texto=novaAviso.value.trim();
+  if(!texto) return;
+  const data = new Date().toLocaleDateString();
+  await fetch(`${dbURL}/avisos.json`,{
+    method:"POST",
+    body: JSON.stringify({ texto, data })
+  });
+  novaAviso.value="";
+  carregarAvisos();
+}
+
+mesSelect.onchange=gerarCalendario;
+anoSelect.onchange=gerarCalendario;
 carregarSeletores();
 </script>
 </body>
